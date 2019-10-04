@@ -3,13 +3,13 @@ package com.company;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class DataExtractor {
     private BufferedReader br;
+    ObjectMapper mapper = new ObjectMapper();
 
     public Set<String> readCompanyData(String file) throws IOException {
         br = new BufferedReader(new FileReader(file));
@@ -23,14 +23,38 @@ public class DataExtractor {
         return companies;
     }
 
-    public List<String> readInvoiceData(String file) throws IOException {
+    public List<List<String>> readInvoiceData(String file) throws IOException {
         br = new BufferedReader(new FileReader(file));
-        List<String> lines = new ArrayList<>();
+        HashMap<String,TreeMap<String,String>> lines = new HashMap<>();
         String line = "";
         while((line = br.readLine()) != null) {
-            lines.add(line);
+            Map<String,String> data = mapper.readValue(line,Map.class);
+            String lineid = data.get("line_id");
+            String word = data.get("word");
+            String posid = data.get("pos_id");
+            TreeMap<String,String> map = new TreeMap<>();
+            if(lines.get(lineid) != null) {
+                map = lines.get(lineid);
+            }
+            map.put(posid,word);
+            lines.put(lineid,map);
         }
-        return lines;
+        List<List<String>> result = new ArrayList<>();
+        for(String s : lines.keySet()) {
+            ArrayList<String> words = new ArrayList<>(lines.get(s).values());
+            List<String> combination = new ArrayList<>();
+            findCombinations(words,combination,0,"");
+            result.add(combination);
+        }
+        return result;
+    }
+
+    public void findCombinations(List<String> words, List<String> combinations, int wordIndex, String currentWord) {
+        if (!currentWord.equals("")) combinations.add(currentWord);
+        for(int i =wordIndex;i<words.size();i++) {
+            String newCombination = currentWord + " " + words.get(i);
+            findCombinations(words,combinations,i+1,newCombination);
+        }
     }
 
 }
