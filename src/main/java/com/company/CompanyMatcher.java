@@ -6,19 +6,20 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class CompanyMatcher {
     Set<String> _companies;
-    ObjectMapper mapper = new ObjectMapper();
     public CompanyMatcher(Set<String> companies) {
         _companies = companies;
     }
 
-    public String findMatch(ArrayList<String> data) {
-        String match = "Not found any";
-        for(String s : data) {
+    public List<String> findMatch(List<List<String>> data) {
+        ArrayList<String> matches = new ArrayList<>();
 
+        for(List<String> strings : data) {
+            for(String s : strings) {
+                if(_companies.contains(s)) matches.add(s);
+            }
         }
-        return match;
+
+        return matches;
     }
-
-
 }
 
